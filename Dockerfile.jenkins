@@ -1,0 +1,44 @@
+FROM jenkins/jenkins:lts
+   
+# Switch to root to install additional packages
+USER root
+
+# Install Docker CLI
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Switch back to jenkins user
+USER jenkins
+
+# Install required Jenkins plugins
+RUN jenkins-plugin-cli --plugins \
+    docker-workflow \
+    docker-plugin \
+    pipeline-stage-view \
+    build-timeout \
+    credentials-binding \
+    timestamper \
+    ws-cleanup \
+    ant \
+    gradle \
+    workflow-aggregator \
+    github-branch-source \
+    pipeline-github-lib \
+    pipeline-stage-view \
+    ssh-slaves \
+    matrix-auth \
+    pam-auth \
+    ldap \
+    email-ext \
+    mailer \
+    snyk-security-scanner
