@@ -11,11 +11,17 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=   
       - DOCKER_DRIVER=overlay2
-    command: --storage-driver=overlay2 --host=tcp://0.0.0.0:2375
+    command: --storage-driver=overlay2 --host=tcp://0.0.0.0:2375 --insecure-registry=0.0.0.0/0
     networks:
       - jenkins-network
     ports:
       - "2375:2375"
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # Jenkins service
   jenkins:
@@ -36,10 +42,17 @@ services:
       - JENKINS_OPTS=--httpPort=8080
       - DOCKER_BUILDKIT=1
     depends_on:
-      - dind
+      dind:
+        condition: service_healthy
     networks:
       - jenkins-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 volumes:
   jenkins-home:
