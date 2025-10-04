@@ -4,7 +4,7 @@ services:
   # Docker-in-Docker service for building
   dind:
     image: docker:dind
-    container_name: devops-second-dind-1
+    container_name: project2-dind-1
     privileged: true
     volumes:
       - dind-cache:/var/lib/docker
