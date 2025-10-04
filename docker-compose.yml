@@ -1,51 +1,50 @@
 version: '3.8'
 
 services:
-  # Docker-in-Docker service for secure container building
+  # Docker-in-Docker service for building
   dind:
     image: docker:dind
+    container_name: devops-second-dind-1
     privileged: true
     volumes:
       - dind-cache:/var/lib/docker
     environment:
-      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_TLS_CERTDIR=   
       - DOCKER_DRIVER=overlay2
-    command: --storage-driver=overlay2 --tls=false
+    command: --storage-driver=overlay2 --host=tcp://0.0.0.0:2375
     networks:
       - jenkins-network
+    ports:
+      - "2375:2375"
 
-  # Jenkins service with security hardening
+  # Jenkins service
   jenkins:
     build:
       context: .
       dockerfile: Dockerfile.jenkins
     container_name: jenkins-master
     ports:
-      - "8080:8080"   # Web UI port
-      - "50000:50000" # Agent communication port
+      - "8080:8080"    
+      - "50000:50000"  
     volumes:
       - jenkins-home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./jenkins-config:/var/jenkins_home/init.groovy.d
     environment:
-      - DOCKER_HOST=tcp://dind:2375
-      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_HOST=tcp://dind:2375   
+      - DOCKER_TLS_CERTDIR=            
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       - JENKINS_OPTS=--httpPort=8080
+      - DOCKER_BUILDKIT=1
     depends_on:
       - dind
     networks:
       - jenkins-network
     restart: unless-stopped
 
-# Named volumes for data persistence
 volumes:
   jenkins-home:
-    driver: local
   dind-cache:
-    driver: local
 
-# Network for service communication
 networks:
   jenkins-network:
     driver: bridge
