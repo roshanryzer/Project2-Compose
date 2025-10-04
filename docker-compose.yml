@@ -16,7 +16,9 @@ services:
 
   # Jenkins service with security hardening
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     container_name: jenkins-master
     ports:
       - "8080:8080"   # Web UI port

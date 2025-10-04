@@ -1,7 +1,11 @@
 FROM jenkins/jenkins:lts
-   
+
 # Switch to root to install additional packages
 USER root
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
 
 # Install Docker CLI
 RUN apt-get update && apt-get install -y \
@@ -22,23 +26,14 @@ USER jenkins
 
 # Install required Jenkins plugins
 RUN jenkins-plugin-cli --plugins \
+    workflow-aggregator \
+    git \
     docker-workflow \
     docker-plugin \
-    pipeline-stage-view \
+    matrix-auth \
     build-timeout \
     credentials-binding \
     timestamper \
     ws-cleanup \
-    ant \
-    gradle \
-    workflow-aggregator \
-    github-branch-source \
-    pipeline-github-lib \
-    pipeline-stage-view \
-    ssh-slaves \
-    matrix-auth \
-    pam-auth \
-    ldap \
     email-ext \
-    mailer \
-    snyk-security-scanner
+    mailer
